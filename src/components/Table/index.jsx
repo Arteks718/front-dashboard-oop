@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, forwardRef, useImperativeHandle } from "react";
 import { connect } from "react-redux";
 import {
   getLeadsThunk,
@@ -15,9 +15,8 @@ function Table({
   getLeads,
   getSalesManagers,
   updateLeadStatus,
-  sidebarStatus,
-  onGetLeads
-}) {
+  sidebarStatus
+}, ref) {
   useEffect(() => {
     getLeads(sidebarStatus);
     getSalesManagers();

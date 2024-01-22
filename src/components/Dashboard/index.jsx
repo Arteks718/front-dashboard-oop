@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from "react";
+import { connect } from "react-redux";
 import Table from "../Table";
+import {
+  getLeadsThunk
+} from "../../store/slice/leadsSlice";
 import "./style.css";
 
-function Dashboard() {
+function Dashboard({ getLeads }) {
   const [sidebarStatus, setSidebarStatus] = useState("all")
   return (
     <aside className="frame">
@@ -30,7 +34,7 @@ function Dashboard() {
           </div>
         </div>
         <div className="div-wrapper-2">
-          <button className="text-wrapper-5">Refresh</button>
+          <button className="text-wrapper-5" onClick={() => getLeads(sidebarStatus)}>Refresh</button>
         </div>
         <Table sidebarStatus={sidebarStatus}></Table>
       </div>
@@ -38,4 +42,15 @@ function Dashboard() {
   );
 }
 
-export default Dashboard
+const mapStateToProps = ({ leadsData, salesManagersData }) => ({
+  leads: leadsData.leads,
+  error: leadsData.error,
+  isFetching: leadsData.isFetching,
+  salesManagers: salesManagersData.salesManagers,
+});
+
+const mapDispatchToProps = (dispatch) => ({
+  getLeads: (sidebarStatus) => dispatch(getLeadsThunk(sidebarStatus)),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Dashboard);

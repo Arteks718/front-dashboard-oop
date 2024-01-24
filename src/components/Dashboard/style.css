@@ -155,3 +155,7 @@
   position: absolute;
   top: 15px;
 }
+
+.opacity {
+  opacity: 0.5;
+}

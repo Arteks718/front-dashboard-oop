@@ -1,4 +1,4 @@
-import React, { useEffect, forwardRef, useImperativeHandle } from "react";
+import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import {
   getLeadsThunk,
@@ -15,12 +15,47 @@ function Table({
   getLeads,
   getSalesManagers,
   updateLeadStatus,
-  sidebarStatus
-}, ref) {
+  sidebarStatus,
+}) {
+  const [selectedSalesManagerIds, setSelectedSalesManagerIds] = useState({});
   useEffect(() => {
     getLeads(sidebarStatus);
     getSalesManagers();
   }, [sidebarStatus]);
+  
+  // useEffect(() => {
+  //   updateSelectedSalesManagerIds();
+  // }, [leads])
+
+
+  const updateSalesManagerId = (leadId, newSalesManagerId) => {
+    setSelectedSalesManagerIds((prevIds) => ({
+      ...prevIds,
+      [leadId]: newSalesManagerId,
+    }));
+  };
+  // function updateSelectedSalesManagerIds() {
+  //   setSelectedSalesManagerIds(
+  //     leads.map((lead) =>
+  //       !lead.salesManagerId
+  //         ? { [lead.id]: lead.salesManagerId }
+  //         : { [lead.id]: "0" }
+  //     )
+  //   );
+  // }
+  // console.log(selectedSalesManagerIds);
+
+  const handleSelectChange = (leadId, e) => {
+    updateSalesManagerId(leadId, e.target.value);
+  };
+
+  const handleUpdateClick = (lead) => {
+    const updatedSalesManagerId = selectedSalesManagerIds[lead.id];
+    updateLeadStatus({
+      lead,
+      updateData: { salesManagerId: updatedSalesManagerId },
+    });
+  };
 
   return (
     <>
@@ -50,17 +85,26 @@ function Table({
                   <button>Open modal</button>
                 </td>
                 <td>
-                  <select>
-                    <option value="">Select manager</option>
+                  <select
+                    value={lead.salesManagerId || '0'}
+                    onChange={(e) => updateLeadStatus({ lead, updateData: { salesManagerId: e.target.value } })}
+                  >
+                    <option value={0}>Select sales manager</option>
                     {salesManagers.map((salesManager, index) => (
-                      <option key={index}>{salesManager.name}</option>
+                      <option key={index} value={salesManager.id}>
+                        {salesManager.name}
+                      </option>
                     ))}
                   </select>
-                  <button>UPDATE</button>
+                  {/* <button onClick={() => handleUpdateClick(lead)}>
+                    UPDATE
+                  </button> */}
                 </td>
                 <td>
                   <button
-                    onClick={() => updateLeadStatus({ lead, status: "spam" })}
+                    onClick={() =>
+                      updateLeadStatus({ lead, updateData: { status: "spam" } })
+                    }
                   >
                     SPAM
                   </button>
@@ -69,7 +113,9 @@ function Table({
             ))}
           </tbody>
         </table>
-      ) : <div>List is empty</div>}
+      ) : (
+        <div>List is empty</div>
+      )}
     </>
   );
 }

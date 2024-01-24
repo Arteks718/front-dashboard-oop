@@ -18,10 +18,9 @@ export const getLeadsThunk = createAsyncThunk(
 
 export const updateLeadStatusThunk = createAsyncThunk(
   "leads/put",
-  async ({lead, status}, { rejectWithValue }) => {
+  async ({lead, updateData}, { rejectWithValue }) => {
     try {
-      console.log(lead, status)
-      const { data } = await updateHttpLead(lead, status)
+      const { data } = await updateHttpLead(lead, updateData)
       return data;
     } catch (error) {
       return rejectWithValue(error.message)
@@ -58,10 +57,13 @@ const leadsSlice = createSlice({
     })
     .addCase(getLeadsThunk.rejected, rejectedFunction)
     .addCase(updateLeadStatusThunk.pending, pendingFunction)
-    .addCase(updateLeadStatusThunk.fulfilled, (state, {payload}) => {
-      state.leads = []
+    .addCase(updateLeadStatusThunk.fulfilled, (state, {payload: { data }}) => {
       state.isFetching = false;
-      state.leads.push(...payload.data)
+      const updatedLead = {...data[1][0]}
+      const updateLeadStatus = state.leads.findIndex(
+        (lead) => lead.id === updatedLead.id
+      );
+      state.leads[updateLeadStatus] = { ...updatedLead };
     })
     .addCase(updateLeadStatusThunk.rejected, rejectedFunction)
   }

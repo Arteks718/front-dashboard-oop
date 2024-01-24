@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { connect } from "react-redux";
 import Table from "../Table";
 import {
@@ -24,7 +24,7 @@ function Dashboard({ getLeads }) {
           </div>
           <div className="overlap-group-wrapper">
             <div className="div-wrapper">
-              <button className="text-wrapper-3" onClick={() => setSidebarStatus("uncheked")}>Uncheked</button>
+              <button className="text-wrapper-3" onClick={() => setSidebarStatus("unchecked")}>Uncheked</button>
             </div>
           </div>
           <div className="group-2">

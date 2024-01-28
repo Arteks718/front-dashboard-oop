@@ -5,7 +5,10 @@ import {
   updateLeadStatusThunk,
 } from "../../store/slice/leadsSlice";
 import { getSalesManagersThunk } from "../../store/slice/salesManagersSlice";
+import AboutUser from "../AboutUser";
 import styled from "./Table.module.sass";
+import classNames from "classnames";
+import loading from "./loading.gif";
 
 function Table({
   leads,
@@ -18,15 +21,13 @@ function Table({
   sidebarStatus,
 }) {
   const [selectedSalesManagerIds, setSelectedSalesManagerIds] = useState({});
+  const [isAboutUserOpen, setIsAboutUserOpen] = useState(false);
+  const [selectedLead, setSelectedLead] = useState(null);
+
   useEffect(() => {
     getLeads(sidebarStatus);
     getSalesManagers();
   }, [sidebarStatus]);
-  
-  // useEffect(() => {
-  //   updateSelectedSalesManagerIds();
-  // }, [leads])
-
 
   const updateSalesManagerId = (leadId, newSalesManagerId) => {
     setSelectedSalesManagerIds((prevIds) => ({
@@ -34,44 +35,35 @@ function Table({
       [leadId]: newSalesManagerId,
     }));
   };
-  // function updateSelectedSalesManagerIds() {
-  //   setSelectedSalesManagerIds(
-  //     leads.map((lead) =>
-  //       !lead.salesManagerId
-  //         ? { [lead.id]: lead.salesManagerId }
-  //         : { [lead.id]: "0" }
-  //     )
-  //   );
-  // }
-  // console.log(selectedSalesManagerIds);
 
-  const handleSelectChange = (leadId, e) => {
-    updateSalesManagerId(leadId, e.target.value);
+  const handleOpenAboutUser = (lead) => {
+    setSelectedLead(lead);
+    setIsAboutUserOpen(true);
   };
 
-  const handleUpdateClick = (lead) => {
-    const updatedSalesManagerId = selectedSalesManagerIds[lead.id];
-    updateLeadStatus({
-      lead,
-      updateData: { salesManagerId: updatedSalesManagerId },
-    });
+  const handleCloseAboutUser = () => {
+    setIsAboutUserOpen(false);
   };
 
   return (
     <>
       {error && <div>Error! Network error!</div>}
-      {isFetching && <div>Loading...</div>}
-      {leads.length ? (
-        <table className={styled.test}>
+      {isFetching && (
+        <div className={classNames(styled.isLoading)}>
+          <img src={loading} alt="Loading..." />
+        </div>
+      )}
+      {!isFetching && !error && (
+        <table className={styled.dashboardTable}>
           <thead>
             <tr>
               <th>ID</th>
               <th>Name</th>
               <th>Email</th>
-              {sidebarStatus === "all" && <th>Status</th>}
+              {sidebarStatus !== "unchecked" && <th>Status</th>}
               <th>Detail information</th>
-              <th>Select sales manager</th>
-              <th>SPAM</th>
+              {sidebarStatus !== "spam" && <th>Select sales manager</th>}
+              {sidebarStatus !== "spam" && <th>SPAM</th>}
             </tr>
           </thead>
           <tbody>
@@ -80,41 +72,64 @@ function Table({
                 <td>{lead.id}</td>
                 <td>{lead.name}</td>
                 <td>{lead.email}</td>
-                {sidebarStatus === "all" && <td>{lead.status}</td>}
+                {sidebarStatus !== "unchecked" && <td>{lead.status}</td>}
                 <td>
-                  <button>Open modal</button>
-                </td>
-                <td>
-                  <select
-                    value={lead.salesManagerId || '0'}
-                    onChange={(e) => updateLeadStatus({ lead, updateData: { salesManagerId: e.target.value } })}
-                  >
-                    <option value={0}>Select sales manager</option>
-                    {salesManagers.map((salesManager, index) => (
-                      <option key={index} value={salesManager.id}>
-                        {salesManager.name}
-                      </option>
-                    ))}
-                  </select>
-                  {/* <button onClick={() => handleUpdateClick(lead)}>
-                    UPDATE
-                  </button> */}
-                </td>
-                <td>
-                  <button
-                    onClick={() =>
-                      updateLeadStatus({ lead, updateData: { status: "spam" } })
-                    }
-                  >
-                    SPAM
+                  <button onClick={() => handleOpenAboutUser(lead)}>
+                    Open modal
                   </button>
                 </td>
+                {sidebarStatus !== "spam" && (
+                  <td>
+                    <select
+                      value={lead.salesManagerId || "0"}
+                      onChange={(e) =>
+                        updateLeadStatus({
+                          lead,
+                          updateData: {
+                            salesManagerId: e.target.value,
+                            status: "checked",
+                          },
+                        })
+                      }
+                    >
+                      <option value={0}>Select sales manager</option>
+                      {salesManagers.map((salesManager, index) => (
+                        <option key={index} value={salesManager.id}>
+                          {salesManager.name}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                )}
+
+                {sidebarStatus !== "spam" && (
+                  <td style={{ padding: 0 }}>
+                    <button
+                      onClick={() =>
+                        updateLeadStatus({
+                          lead,
+                          updateData: { status: "spam" },
+                        })
+                      }
+                      className={classNames(styled.spam)}
+                    >
+                      SPAM
+                    </button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
         </table>
-      ) : (
-        <div>List is empty</div>
+      )}
+      {isAboutUserOpen && selectedLead && (
+        <AboutUser
+          isOpen={isAboutUserOpen}
+          ipAddress={selectedLead.ipAddress}
+          country={selectedLead.country}
+          userId={selectedLead.userId}
+          onClose={handleCloseAboutUser}
+        />
       )}
     </>
   );

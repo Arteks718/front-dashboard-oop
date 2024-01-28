@@ -1,44 +1,64 @@
 import React, { useState } from "react";
 import { connect } from "react-redux";
+import classNames from "classnames";
 import Table from "../Table";
-import {
-  getLeadsThunk
-} from "../../store/slice/leadsSlice";
-import "./style.css";
+import { getLeadsThunk } from "../../store/slice/leadsSlice";
+import styled from "./Dashboard.module.sass";
 
 function Dashboard({ getLeads }) {
-  const [sidebarStatus, setSidebarStatus] = useState("all")
+  const [sidebarStatus, setSidebarStatus] = useState("all");
+
   return (
-    <aside className="frame">
-      <div className="div">
-        <div className="div-2">
-          <div className="group">
-            <div className="overlap-group">
-              <button className="text-wrapper" onClick={() => setSidebarStatus("spam")}>Spam</button>
-            </div>
-          </div>
-          <div className="overlap-wrapper">
-            <div className="overlap">
-              <button className="text-wrapper-2" onClick={() => setSidebarStatus("checked")}>Checked</button>
-            </div>
-          </div>
-          <div className="overlap-group-wrapper">
-            <div className="div-wrapper">
-              <button className="text-wrapper-3" onClick={() => setSidebarStatus("unchecked")}>Uncheked</button>
-            </div>
-          </div>
-          <div className="group-2">
-            <div className="overlap-2">
-              {<button className="text-wrapper-4" onClick={() => setSidebarStatus("all")}>All</button>}
-            </div>
-          </div>
+    <section classNames={styled.dashboard}>
+      <header>
+        <div className={styled.refreshContainer}>
+          <button
+            className={classNames(styled.refreshButton)}
+            onClick={() => getLeads(sidebarStatus)}
+          >
+            Refresh
+          </button>
         </div>
-        <div className="div-wrapper-2">
-          <button className="text-wrapper-5" onClick={() => getLeads(sidebarStatus)}>Refresh</button>
-        </div>
-        <Table sidebarStatus={sidebarStatus}></Table>
-      </div>
-    </aside>
+      </header>
+
+      <section className={classNames(styled.dashboardContainer)}>
+        <aside className={classNames(styled.navigationWrapper)}>
+          <button
+            className={classNames(styled.black, {
+              [styled.active]: sidebarStatus === "all",
+            })}
+            onClick={() => setSidebarStatus("all")}
+          >
+            All
+          </button>
+          <button
+            className={classNames(styled.blue, {
+              [styled.active]: sidebarStatus === "unchecked",
+            })}
+            onClick={() => setSidebarStatus("unchecked")}
+          >
+            Unchecked
+          </button>
+          <button
+            className={classNames(styled.green, {
+              [styled.active]: sidebarStatus === "checked",
+            })}
+            onClick={() => setSidebarStatus("checked")}
+          >
+            Checked
+          </button>
+          <button
+            className={classNames(styled.red, {
+              [styled.active]: sidebarStatus === "spam",
+            })}
+            onClick={() => setSidebarStatus("spam")}
+          >
+            Spam
+          </button>
+        </aside>
+          <Table sidebarStatus={sidebarStatus}></Table>
+      </section>
+    </section>
   );
 }
 
